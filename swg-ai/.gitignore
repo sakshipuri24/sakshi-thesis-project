@@ -1,0 +1,10 @@
+# Bytecode / caches
+__pycache__/
+*.pyc
+
+# Logs and runtime caches
+domain_cache.json
+logs.txt
+
+# Local env files
+.env

@@ -1,0 +1,3 @@
+mitmproxy>=10
+tldextract>=5
+google-generativeai>=0.7
