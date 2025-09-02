@@ -67,7 +67,7 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 # --- Gemini API Configuration ---
-api_key = os.environ.get("GOOGLE_API_KEY", "AIzaSyARMlRkh23VUzk1LXuwvB6iY_vW8OOSCGY")
+api_key = os.environ.get("GOOGLE_API_KEY", "")
 genai.configure(api_key=api_key)
 
 #  Initialize the Gemini model  
