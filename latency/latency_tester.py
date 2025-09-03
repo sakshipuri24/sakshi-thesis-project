@@ -1,18 +1,27 @@
 import requests
 import time
 import statistics
+import argparse
+import os
 
-def measure_latency(domains, num_requests=3):
+import warnings
+from urllib3.exceptions import InsecureRequestWarning
+
+# Suppress only the single InsecureRequestWarning from urllib3
+warnings.simplefilter("ignore", InsecureRequestWarning)
+
+
+def measure_latency(domains, num_requests=3, verify_cert=True):
     """
     Measures the latency to a list of domains and returns a dictionary of results.
-    
+
     Args:
         domains (list): A list of domain names to test.
-        num_requests (int): The number of times to test each domain for a more stable average.
-        
+        num_requests (int): The number of times to test each domain.
+        verify_cert (str|bool): Path to CA cert bundle or True/False.
+
     Returns:
-        dict: A dictionary with domains as keys and their average latency in milliseconds as values.
-              Returns an empty dictionary if an error occurs.
+        dict: Domain -> average latency in ms (or None on failure)
     """
     latencies = {}
     print("--- Starting Latency Test ---")
@@ -22,39 +31,44 @@ def measure_latency(domains, num_requests=3):
         domain_latencies = []
         try:
             for i in range(num_requests):
-                # Start timer
                 start_time = time.perf_counter()
-                
-                # Send HTTP GET request
-                # timeout=5 sets a 5-second timeout for the request.
-                # verify=True ensures SSL certificates are verified, which is important when an SWG is doing SSL inspection.
-                response = requests.get(url, timeout=5, verify="dope.security.root.crt")
-                
-                # Stop timer
+
+                response = requests.get(url, timeout=5, verify=verify_cert)
+
                 end_time = time.perf_counter()
-                
-                # Calculate the elapsed time in milliseconds
                 elapsed_time_ms = (end_time - start_time) * 1000
                 domain_latencies.append(elapsed_time_ms)
-                
+
                 print(f"  {i+1}/{num_requests} -> {url}: {elapsed_time_ms:.2f} ms (Status: {response.status_code})")
-                
-                # A small delay between requests to the same domain
                 time.sleep(0.5)
 
-            # Calculate the average latency for the current domain
             avg_latency = statistics.mean(domain_latencies)
             latencies[domain] = avg_latency
             print(f"-> Average for {url}: {avg_latency:.2f} ms\n")
 
         except requests.exceptions.RequestException as e:
             print(f"Could not connect to {url}. Error: {e}\n")
-            latencies[domain] = None # Indicate failure for this domain
+            latencies[domain] = None
 
     return latencies
 
+
 if __name__ == "__main__":
-    # List of 20 popular domains to test
+    parser = argparse.ArgumentParser(description="Latency tester with optional CA certificate support.")
+    parser.add_argument("--ca-cert", help="Path to custom CA certificate bundle (PEM format)")
+    parser.add_argument("--insecure", action="store_true", help="Disable SSL verification (NOT recommended)")
+    args = parser.parse_args()
+
+    # Determine SSL verification mode
+    if args.insecure:
+        verify_cert = False
+    elif args.ca_cert:
+        verify_cert = args.ca_cert
+    elif os.getenv("REQUESTS_CA_BUNDLE"):
+        verify_cert = os.getenv("REQUESTS_CA_BUNDLE")
+    else:
+        verify_cert = True
+
     popular_domains = [
         "google.com", "youtube.com", "facebook.com", "amazon.com",
         "wikipedia.org", "twitter.com", "instagram.com", "linkedin.com",
@@ -62,13 +76,11 @@ if __name__ == "__main__":
         "office.com", "yahoo.com", "bing.com", "salesforce.com",
         "ebay.com", "cnn.com", "nytimes.com", "github.com"
     ]
-    
-    # Run the latency measurement
-    results = measure_latency(popular_domains, num_requests=5)
-    
-    # --- Analysis of Results ---
+
+    results = measure_latency(popular_domains, num_requests=5, verify_cert=verify_cert)
+
     successful_results = [lat for lat in results.values() if lat is not None]
-    
+
     if successful_results:
         overall_average = statistics.mean(successful_results)
         min_latency = min(successful_results)
