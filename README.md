@@ -21,19 +21,8 @@ This repo contains two small, self-contained programs used in an MTU MSc Cyberse
 - Install deps: `pip install -r latency/requirements.txt`
 - Run:
   ```bash
-  python latency/latency_tester_proxy.py
+  python latency/latency_tester.py
   ```
-- (Optional) To measure via a proxy (e.g., your SWG), set env vars before running:
-  - macOS/Linux:
-    ```bash
-    export HTTP_PROXY=http://127.0.0.1:8080
-    export HTTPS_PROXY=http://127.0.0.1:8080
-    ```
-  - Windows PowerShell:
-    ```powershell
-    $Env:HTTP_PROXY="http://127.0.0.1:8080"
-    $Env:HTTPS_PROXY="http://127.0.0.1:8080"
-    ```
 
 ## Repo Structure
 
