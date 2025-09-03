@@ -37,9 +37,8 @@ SWG-AI-and-Latency-Repo/
 │  ├─ .env.example            # GOOGLE_API_KEY placeholder
 │  └─ .gitignore
 ├─ latency/
-│  ├─ latency_tester_proxy.py
+│  ├─ latency_tester.py
 │  ├─ requirements.txt
-│  └─ README.md
 └─ README.md   # (this file)
 ```
 
